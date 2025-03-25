@@ -3,3 +3,7 @@
 // Name: Kai Meiklejohn
 // ID: 1632448
 // Solo project
+
+public class FileProcessor {
+    
+}

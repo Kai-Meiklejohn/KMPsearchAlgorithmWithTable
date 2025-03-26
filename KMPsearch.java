@@ -6,21 +6,17 @@
 
 public class KMPsearch {
     public static void main(String[] args) {
-        // check how many args we got
         if (args.length == 1) {
+            // Print skip table for target string
             String target = args[0];
-            // just one arg means skip table time
             SkipTable skipTable = new SkipTable(target);
             skipTable.printSkipTable();
         } else if (args.length == 2) {
-            // two args, so we are searching a file
+            // Placeholder for file search (to be implemented later)
             String target = args[0];
             String filename = args[1];
-            FileProcessor fileProcessor = new FileProcessor(filename, target);
-            // solo mode, first hit only
-            fileProcessor.processFile(false);
+            System.out.println("File search not implemented yet for: " + target + " in " + filename);
         } else {
-            // throw error to useer
             System.out.println("Usage: java KMPsearch \"target\" [filename.txt]");
         }
     }

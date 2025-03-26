@@ -36,10 +36,8 @@ public class SkipTable {
                 len++;
                 lps[i] = len;
                 i++;
-            }
-            
-            // If there is a mismatch
-            else {
+            } else {
+                // If characters do not match
                 if (len != 0) {
                     
                     // Update len to the previous lps value 
@@ -54,51 +52,6 @@ public class SkipTable {
                 }
             }
         }
-    }
-
-    static ArrayList<Integer> search(String pat, String txt) {
-        int n = txt.length();
-        int m = pat.length();
-
-        int[] lps = new int[m];
-        ArrayList<Integer> res = new ArrayList<>();
-
-        constructLps(pat, lps);
-
-        // Pointers i and j, for traversing 
-        // the text and pattern
-        int i = 0;
-        int j = 0;
-
-        while (i < n) {
-            // If characters match, move both pointers forward
-            if (txt.charAt(i) == pat.charAt(j)) {
-                i++;
-                j++;
-
-                // If the entire pattern is matched 
-                // store the start index in result
-                if (j == m) {
-                    res.add(i - j);
-                    
-                    // Use LPS of previous index to 
-                    // skip unnecessary comparisons
-                    j = lps[j - 1];
-                }
-            }
-            
-            // If there is a mismatch
-            else {
-                
-                // Use lps value of previous index
-                // to avoid redundant comparisons
-                if (j != 0)
-                    j = lps[j - 1];
-                else
-                    i++;
-            }
-        }
-        return res;
     }
 
     // Print the skip table as per assignment specification

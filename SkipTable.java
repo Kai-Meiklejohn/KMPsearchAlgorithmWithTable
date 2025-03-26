@@ -1,113 +1,110 @@
 // SkipTable.java
 // Computes and prints the KMP skip table for a given target string
 // Name: Kai Meiklejohn
-// ID: 1632448
+// Student ID: 1632448
 // Solo project
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.TreeSet;
 
+/**
+ * handles the computation and printing of a KMP skip table for a pattern string
+ */
 public class SkipTable {
     private final String pattern;
-    private final int[] lps; // Longest Prefix Suffix array
+    private final int[] lps;
 
+    /**
+     * initializes a SkipTable with the given pattern and computes its LPS array
+     * @param pattern the string to generate the skip table for
+     * @throws IllegalArgumentException if pattern is null or empty
+     */
     public SkipTable(String pattern) {
+        if (pattern == null || pattern.isEmpty()) {
+            throw new IllegalArgumentException("pattern cannot be null or empty");
+        }
         this.pattern = pattern;
-        this.lps = new int[this.pattern.length()];
-        constructLps(this.pattern, this.lps);
+        this.lps = new int[pattern.length()];
+        constructLps();
     }
 
-    static void constructLps(String pat, int[] lps) {
-        
-        // len stores the length of longest prefix which 
-        // is also a suffix for the previous index
-        int len = 0;
+    // constructs the LPS array, which stores the length of the longest proper prefix
+    // that is also a suffix for each position in the pattern
+    private void constructLps() {
+        int len = 0; // length of the current prefix that’s also a suffix
+        lps[0] = 0;  // no prefix/suffix possible at the first character
 
-        // lps[0] is always 0
-        lps[0] = 0;
-
-        int i = 1;
-        while (i < pat.length()) {
-            
-            // If characters match, increment the size of lps
-            if (pat.charAt(i) == pat.charAt(len)) {
+        // loop through pattern starting at second character
+        for (int i = 1; i < pattern.length(); i++) {
+            if (pattern.charAt(i) == pattern.charAt(len)) {
+                // characters match, extend the prefix/suffix length
                 len++;
                 lps[i] = len;
-                i++;
+            } else if (len != 0) {
+                // mismatch occurred, fall back to the previous prefix length
+                len = lps[len - 1];
+                i--; // re-check this position with the updated length
             } else {
-                // If characters do not match
-                if (len != 0) {
-                    
-                    // Update len to the previous lps value 
-                    // to avoid redundant comparisons
-                    len = lps[len - 1];
-                } 
-                else {
-                    
-                    // If no matching prefix found, set lps[i] to 0
-                    lps[i] = 0;
-                    i++;
-                }
+                // no prefix matches at all, set LPS to 0
+                lps[i] = 0;
             }
         }
     }
 
-    // Print the skip table as per assignment specification
+    // prints the KMP skip table in the required format: pattern row, unique char rows,
+    // and default row
     public void printSkipTable() {
-        // Get unique characters in the pattern
-        Set<Character> uniqueChars = new HashSet<>();
+        // collect unique characters in sorted order
+        TreeSet<Character> uniqueChars = new TreeSet<>();
         for (char c : pattern.toCharArray()) {
             uniqueChars.add(c);
         }
-        Character[] chars = uniqueChars.toArray(new Character[0]);
-        Arrays.sort(chars); // Sort alphabetically
 
-        // Print pattern row
-        System.out.print("*");
-        for (int i = 0; i < pattern.length(); i++) {
-            System.out.print("," + pattern.charAt(i));
-        }
-        System.out.println();
+        // print the pattern row with '*' prefix
+        printRow('*', pattern.chars().mapToObj(ch -> (char) ch).toArray(Character[]::new));
 
-        // Print rows for each unique character
-        for (char c : chars) {
-            System.out.print(c);
+        // generate and print a row for each unique character
+        for (char c : uniqueChars) {
+            Integer[] skips = new Integer[pattern.length()];
             for (int j = 0; j < pattern.length(); j++) {
-                int skip = computeSkip(c, j);
-                System.out.print("," + skip);
+                skips[j] = computeSkip(c, j);
             }
-            System.out.println();
+            printRow(c, skips);
         }
 
-        // Print default row for characters not in pattern
-        System.out.print("*");
+        // print the default row with incremental skip values
+        Integer[] defaults = new Integer[pattern.length()];
         for (int j = 0; j < pattern.length(); j++) {
-            System.out.print("," + (j + 1)); // Default skip is position + 1
+            defaults[j] = j + 1;
+        }
+        printRow('*', defaults);
+    }
+
+    // prints a row starting with a prefix followed by comma-separated values
+    private void printRow(char prefix, Object[] values) {
+        System.out.print(prefix);
+        for (Object value : values) {
+            System.out.print("," + value);
         }
         System.out.println();
     }
 
-    // Compute skip distance for a character at a given position
+    // computes how far to skip when character c mismatches at position pos
     private int computeSkip(char c, int pos) {
         if (pattern.charAt(pos) == c) {
-            return 0; // Match, no shift
+            return 0; // match means no shift needed
         }
         if (pos == 0) {
-            return 1; // No match at start, shift by 1
+            return 1; // mismatch at start, shift by one
         }
-        
-        // Find the longest prefix that we can fall back to
+
+        // start with the LPS value from the previous position
         int k = lps[pos - 1];
+        // backtrack through LPS until we find a prefix where c matches or hit zero
         while (k > 0 && pattern.charAt(k) != c) {
             k = lps[k - 1];
         }
-        
-        if (pattern.charAt(k) == c) {
-            return pos - k;
-        } else {
-            return pos + 1; // No prefix matches, shift fully
-        }
+        // if c matches at the prefix position k, shift is the distance from pos to k
+        // otherwise, shift fully past the current position
+        return (pattern.charAt(k) == c) ? pos - k : pos + 1;
     }
 }

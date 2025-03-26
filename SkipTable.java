@@ -7,7 +7,7 @@
 import java.util.TreeSet;
 
 /**
- * handles the computation and printing of a KMP skip table for a pattern string
+ * Handles the computation and printing of a KMP skip table for a pattern string
  */
 public class SkipTable {
     private final String pattern;

@@ -50,61 +50,50 @@ public class SkipTable {
         }
     }
 
-    // prints the KMP skip table in the required format: pattern row, unique char rows,
-    // and default row
+    // prints the kmp skip table with pattern, unique char rows, and default row
     public void printSkipTable() {
-        // collect unique characters in sorted order
-        TreeSet<Character> uniqueChars = new TreeSet<>();
-        for (char c : pattern.toCharArray()) {
-            uniqueChars.add(c);
+        TreeSet<Character> alphabet = new TreeSet<>();
+        for (char letter : pattern.toCharArray()) {
+            alphabet.add(letter);
         }
 
-        // print the pattern row with '*' prefix
-        printRow('*', pattern.chars().mapToObj(ch -> (char) ch).toArray(Character[]::new));
+        // print pattern row
+        System.out.print("*");
+        for (char letter : pattern.toCharArray()) {
+            System.out.print("," + letter);
+        }
+        System.out.println();
 
-        // generate and print a row for each unique character
-        for (char c : uniqueChars) {
-            Integer[] skips = new Integer[pattern.length()];
-            for (int j = 0; j < pattern.length(); j++) {
-                skips[j] = computeSkip(c, j);
+        // print rows for each unique character
+        for (char letter : alphabet) {
+            System.out.print(letter);
+            for (int pos = 0; pos < pattern.length(); pos++) {
+                System.out.print("," + getSkip(letter, pos));
             }
-            printRow(c, skips);
+            System.out.println();
         }
 
-        // print the default row with incremental skip values
-        Integer[] defaults = new Integer[pattern.length()];
-        for (int j = 0; j < pattern.length(); j++) {
-            defaults[j] = j + 1;
-        }
-        printRow('*', defaults);
-    }
-
-    // prints a row starting with a prefix followed by comma-separated values
-    private void printRow(char prefix, Object[] values) {
-        System.out.print(prefix);
-        for (Object value : values) {
-            System.out.print("," + value);
+        // print default row
+        System.out.print("*");
+        for (int pos = 0; pos < pattern.length(); pos++) {
+            System.out.print("," + (pos + 1));
         }
         System.out.println();
     }
 
-    // computes how far to skip when character c mismatches at position pos
-    private int computeSkip(char c, int pos) {
-        if (pattern.charAt(pos) == c) {
-            return 0; // match means no shift needed
+    // computes skip distance for a character at a position
+    private int getSkip(char letter, int pos) {
+        if (pattern.charAt(pos) == letter) {
+            return 0; // no shift on match
         }
         if (pos == 0) {
-            return 1; // mismatch at start, shift by one
+            return 1; // shift one if mismatch at start
         }
 
-        // start with the LPS value from the previous position
-        int k = lps[pos - 1];
-        // backtrack through LPS until we find a prefix where c matches or hit zero
-        while (k > 0 && pattern.charAt(k) != c) {
-            k = lps[k - 1];
+        int prefixLen = lps[pos - 1];
+        while (prefixLen > 0 && pattern.charAt(prefixLen) != letter) {
+            prefixLen = lps[prefixLen - 1];
         }
-        // if c matches at the prefix position k, shift is the distance from pos to k
-        // otherwise, shift fully past the current position
-        return (pattern.charAt(k) == c) ? pos - k : pos + 1;
+        return (pattern.charAt(prefixLen) == letter) ? pos - prefixLen : pos + 1;
     }
 }

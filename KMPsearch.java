@@ -1,5 +1,5 @@
 // KMPsearch.java
-// runs the KMP search program and handles command-line inputs
+// Runs the KMP search program and handles command-line inputs
 // Name: Kai Meiklejohn
 // Student ID: 1632448
 // Solo project

@@ -14,54 +14,20 @@ public class KMPSearcher {
     private final int[][] skipTable; // 2d array: [char index][position]
 
     /**
-     * initializes searcher with pattern and its skip table
+     * initializes searcher with pattern and prebuilt skip table
+     * @param skipTable the precomputed skip table from SkipTable
      * @param pattern the string to search for
-     * @throws IllegalArgumentException if pattern is null or empty
+     * @throws IllegalArgumentException if pattern or skipTable is null or invalid
      */
-    public KMPSearcher(String pattern) {
+    public KMPSearcher(String pattern, int[][] skipTable) {
         if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("pattern cannot be null or empty");
         }
+        if (skipTable == null || skipTable.length != 52 || skipTable[0].length != pattern.length()) {
+            throw new IllegalArgumentException("skipTable must be valid for A-Z and a-z with pattern length");
+        }
         this.pattern = pattern;
-        this.skipTable = buildSkipTable();
-    }
-
-    // builds 2d skip table for all possible characters (a-z) at each position
-    private int[][] buildSkipTable() {
-        int len = pattern.length();
-        int[][] table = new int[26][len]; // lowercase a-z
-        for (int pos = 0; pos < len; pos++) {
-            for (char c = 'a'; c <= 'z'; c++) {
-                int charIndex = c - 'a';
-                table[charIndex][pos] = computeSkip(c, pos);
-            }
-        }
-        return table;
-    }
-
-    // computes skip distance without lps by finding valid prefix alignment
-    private int computeSkip(char letter, int pos) {
-        if (pattern.charAt(pos) == letter) {
-            return 0; // match, no shift
-        }
-        if (pos == 0) {
-            return 1; // mismatch at start, shift 1
-        }
-
-        // find longest prefix that matches a suffix ending before pos
-        for (int k = pos - 1; k >= 0; k--) {
-            boolean match = true;
-            for (int i = 0; i < k; i++) {
-                if (pattern.charAt(i) != pattern.charAt(pos - k + i)) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match && pattern.charAt(pos - k) == letter) {
-                return pos - k; // shift to align prefix
-            }
-        }
-        return pos + 1; // no matching prefix, shift fully past
+        this.skipTable = skipTable;
     }
 
     // searches for pattern in text and returns list of match start indices
@@ -83,20 +49,25 @@ public class KMPSearcher {
                     patPos = 0; // reset to start after match
                 }
             } else {
-                int charIndex = text.charAt(textPos) - 'a';
-                if (charIndex >= 0 && charIndex < 26) {
-                    int skip = skipTable[charIndex][patPos];
-                    if (skip == 0) {
-                        patPos++; // should never happen due to mismatch
-                    } else if (skip > patPos) {
-                        textPos += skip - patPos; // shift text past current alignment
-                        patPos = 0;
-                    } else {
-                        patPos = patPos - skip + 1; // shift pattern back
-                    }
+                char textChar = text.charAt(textPos);
+                int charIndex;
+                if (textChar >= 'A' && textChar <= 'Z') {
+                    charIndex = textChar - 'A'; // 0-25 for A-Z
+                } else if (textChar >= 'a' && textChar <= 'z') {
+                    charIndex = 26 + (textChar - 'a'); // 26-51 for a-z
                 } else {
-                    textPos++; // char not in a-z, shift text
+                    textPos++; // char not in A-Z or a-z, shift text
                     patPos = 0;
+                    continue;
+                }
+                int skip = skipTable[charIndex][patPos];
+                if (skip == 0) {
+                    patPos++; // should never happen due to mismatch
+                } else if (skip > patPos) {
+                    textPos += skip - patPos; // shift text past current alignment
+                    patPos = 0;
+                } else {
+                    patPos = patPos - skip + 1; // shift pattern back
                 }
             }
         }

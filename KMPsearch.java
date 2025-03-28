@@ -10,21 +10,15 @@
 public class KMPsearch {
     public static void main(String[] args) {
         try {
-            // check for valid number of arguments
-            // if one argument, print skip table for target string
             if (args.length == 1) {
                 String target = args[0];
-                // create and print skip table for target string
                 SkipTable skipTable = new SkipTable(target);
                 skipTable.printSkipTable();
-            // if two arguments, search for pattern in file
             } else if (args.length == 2) {
                 String target = args[0];
                 String filename = args[1];
-                // process file and search for pattern
-                FileProcessor processor = new FileProcessor(target);
+                FileProcessor processor = new FileProcessor(target); // Skip table built in FileProcessor
                 processor.processFile(filename);
-            // invalid number of arguments
             } else {
                 printUsage();
             }
@@ -34,7 +28,6 @@ public class KMPsearch {
         }
     }
 
-    // prints usage instructions for the program
     private static void printUsage() {
         System.out.println("usage: java KMPsearch \"target\" [filename.txt]");
     }

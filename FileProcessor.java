@@ -20,7 +20,8 @@ public class FileProcessor {
      * @param pattern the string to search for
      */
     public FileProcessor(String pattern) {
-        this.searcher = new KMPSearcher(pattern);
+        SkipTable skipTable = new SkipTable(pattern); // Build skip table once
+        this.searcher = new KMPSearcher(skipTable.getPattern(), skipTable.getSkipTable());
     }
 
     // reads file and prints pattern occurrences with line numbers

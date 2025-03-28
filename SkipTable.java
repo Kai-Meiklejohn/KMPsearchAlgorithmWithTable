@@ -40,7 +40,9 @@ public class SkipTable {
             alphabet.add(c);
         }
 
+        // Compute skip distances for each char at each position
         for (int pos = 0; pos < len; pos++) {
+            // Fill in skip distances for each char
             for (int ch = 0; ch < CHAR_RANGE; ch++) {
                 table[ch][pos] = computeSkip((char) ch, pos);
             }

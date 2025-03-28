@@ -10,20 +10,21 @@ import java.util.ArrayList;
  * Performs string searching using a precomputed 2D skip table instead of an LPS array.
  */
 public class KMPSearcher {
-    private final String pattern;    // Pattern to search for
-    private final int[][] skipTable; // 2D skip table for all ASCII chars
+    private final String pattern;    // pattern to search for
+    private final int[][] skipTable; // 2d skip table for all ASCII chars
 
     /**
-     * Initializes with a pattern and precomputed skip table from SkipTable.
-     * @param pattern String to search for
-     * @param skipTable Precomputed skip table
+     * initializes with a pattern and precomputed skip table from SkipTable
+     * @param pattern string to search for
+     * @param skipTable precomputed skip table
      * @throws IllegalArgumentException if pattern or skipTable is invalid
      */
     public KMPSearcher(String pattern, int[][] skipTable) {
+        // check pattern validity
         if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("pattern cannot be null or empty");
         }
-        // Ensure we match the same dimensions (256 rows)
+        // verify skip table dimensions
         if (skipTable == null || skipTable.length != 256 || skipTable[0].length != pattern.length()) {
             throw new IllegalArgumentException("skipTable must be valid for all ASCII chars with pattern length");
         }
@@ -32,44 +33,52 @@ public class KMPSearcher {
     }
 
     /**
-     * Searches for all pattern occurrences in text using the skip table.
-     * @param text Text to search in
-     * @return List of starting indices of matches
+     * searches for all pattern occurrences in text using the skip table
+     * @param text text to search in
+     * @return list of starting indices of matches
      */
     public ArrayList<Integer> search(String text) {
         ArrayList<Integer> matches = new ArrayList<>();
+        // return empty list if text is invalid
         if (text == null || text.isEmpty()) {
-            return matches; // No matches possible
+            return matches;
         }
 
-        int textPos = 0; // Position in text
-        int patPos = 0;  // Position in pattern
+        int textPos = 0; // current position in text
+        int patPos = 0;  // current position in pattern
 
+        // process text until end
         while (textPos < text.length()) {
+            // characters match, move forward
             if (pattern.charAt(patPos) == text.charAt(textPos)) {
                 textPos++;
                 patPos++;
+                // full match found
                 if (patPos == pattern.length()) {
-                    matches.add(textPos - patPos); // Record match start
-                    patPos = 0; // Reset for next match
+                    matches.add(textPos - patPos); // add match start index
+                    patPos = 0; // reset for next match
                 }
-            } else {
-                // Get ASCII index, skip if out of range
+            }
+            // mismatch, use skip table
+            else {
                 int charIndex = text.charAt(textPos) < 256 ? text.charAt(textPos) : -1;
+                // handle non-ASCII chars
                 if (charIndex < 0) {
-                    // Non-ASCII character: just move on
                     textPos++;
                     patPos = 0;
-                } else {
+                }
+                // apply skip logic
+                else {
                     int skip = skipTable[charIndex][patPos];
                     if (skip == 0) {
-                        // Rare case—can increment the pattern pos
-                        patPos++;
-                    } else if (skip > patPos) {
-                        textPos += skip - patPos;
+                        patPos++; // rare case, increment pattern pos
+                    }
+                    else if (skip > patPos) {
+                        textPos += skip - patPos; // shift text forward
                         patPos = 0;
-                    } else {
-                        patPos = patPos - skip + 1;
+                    }
+                    else {
+                        patPos = patPos - skip + 1; // adjust pattern position
                     }
                 }
             }

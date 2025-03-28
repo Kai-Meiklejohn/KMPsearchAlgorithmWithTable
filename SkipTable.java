@@ -10,16 +10,17 @@ import java.util.TreeSet;
  * Handles KMP skip table computation and printing without an LPS array.
  */
 public class SkipTable {
-    private static final int CHAR_RANGE = 256; // We now allow all ASCII chars
-    private final String pattern;              // Target string for the skip table
-    private final int[][] skipTable;           // 2D array: [char index][position] for skips
+    private static final int CHAR_RANGE = 256; // allow all ASCII chars
+    private final String pattern;              // target string for the skip table
+    private final int[][] skipTable;           // 2d array: [char index][position] for skips
 
     /**
-     * Initializes with pattern and builds the skip table.
-     * @param pattern String to generate skip table for
+     * initializes with pattern and builds the skip table
+     * @param pattern string to generate skip table for
      * @throws IllegalArgumentException if pattern is null or empty
      */
     public SkipTable(String pattern) {
+        // validate input
         if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("pattern cannot be null or empty");
         }
@@ -28,21 +29,20 @@ public class SkipTable {
     }
 
     /**
-     * Builds a 2D skip table for all ASCII characters at each pattern position.
-     * @return The computed skip table
+     * builds a 2d skip table for all ASCII characters at each pattern position
+     * @return the computed skip table
      */
     private int[][] buildSkipTable() {
         int len = pattern.length();
         int[][] table = new int[CHAR_RANGE][len];
-        // Collect unique chars for printing
+        // collect unique chars for printing later
         TreeSet<Character> alphabet = new TreeSet<>();
         for (char c : pattern.toCharArray()) {
             alphabet.add(c);
         }
 
-        // Compute skip distances for each char at each position
+        // fill table with skip distances
         for (int pos = 0; pos < len; pos++) {
-            // Fill in skip distances for each char
             for (int ch = 0; ch < CHAR_RANGE; ch++) {
                 table[ch][pos] = computeSkip((char) ch, pos);
             }
@@ -51,19 +51,21 @@ public class SkipTable {
     }
 
     /**
-     * Computes skip distance for a character at a position without LPS.
-     * @param letter Character to compute skip for
-     * @param pos Position in pattern
-     * @return Number of positions to skip
+     * computes skip distance for a character at a position without LPS
+     * @param letter character to compute skip for
+     * @param pos position in pattern
+     * @return number of positions to skip
      */
     private int computeSkip(char letter, int pos) {
+        // match found, no skip needed
         if (pattern.charAt(pos) == letter) {
-            return 0; // Match, no skip
+            return 0;
         }
+        // at start of pattern, minimal skip
         if (pos == 0) {
-            return 1; // Start of pattern, skip one
+            return 1;
         }
-        // Check for prefix that matches suffix before pos
+        // look for a prefix that matches a suffix ending before pos
         for (int k = pos - 1; k >= 0; k--) {
             boolean isPrefixMatch = true;
             for (int i = 0; i < k; i++) {
@@ -72,37 +74,39 @@ public class SkipTable {
                     break;
                 }
             }
+            // if prefix matches and next char aligns, return skip distance
             if (isPrefixMatch && pattern.charAt(k) == letter) {
-                return pos - k; // Skip to align prefix
+                return pos - k;
             }
         }
-        return pos + 1; // No prefix match, skip past current position
+        // no prefix match, skip entire current alignment
+        return pos + 1;
     }
 
     /**
-     * Prints the skip table with pattern, unique chars, and default row.
+     * prints the skip table with pattern, unique chars, and default row
      */
     public void printSkipTable() {
         TreeSet<Character> alphabet = new TreeSet<>();
         for (char letter : pattern.toCharArray()) {
             alphabet.add(letter);
         }
-        // Print pattern row
+        // print header with pattern
         System.out.print("*");
         for (char letter : pattern.toCharArray()) {
             System.out.print("," + letter);
         }
         System.out.println();
-        // Print rows for unique characters in pattern
+        // print rows for chars in pattern
         for (char letter : alphabet) {
             System.out.print(letter);
-            int charIndex = letter; // ASCII value as index
+            int charIndex = letter; // use ASCII value directly
             for (int pos = 0; pos < pattern.length(); pos++) {
                 System.out.print("," + skipTable[charIndex][pos]);
             }
             System.out.println();
         }
-        // Print default row for unmatched chars
+        // print default skip values
         System.out.print("*");
         for (int pos = 0; pos < pattern.length(); pos++) {
             System.out.print("," + (pos + 1));
@@ -110,12 +114,12 @@ public class SkipTable {
         System.out.println();
     }
 
-    // Getter for the skip table
+    // getter for the skip table
     public int[][] getSkipTable() {
         return skipTable;
     }
 
-    // Getter for the pattern
+    // getter for the pattern
     public String getPattern() {
         return pattern;
     }

@@ -9,31 +9,38 @@
  */
 public class KMPsearch {
     /**
-     * Entry point: handles args to either print skip table or search a file.
-     * @param args Command-line arguments: "target" or "target filename.txt"
+     * entry point: handles args to either print skip table or search a file
+     * @param args command-line arguments: "target" or "target filename.txt"
      */
     public static void main(String[] args) {
         try {
+            // check if one argument is provided
             if (args.length == 1) {
                 String target = args[0];
                 SkipTable skipTable = new SkipTable(target);
-                skipTable.printSkipTable(); // Print skip table for target
-            } else if (args.length == 2) {
+                skipTable.printSkipTable(); // print skip table for target
+            }
+            // check if two arguments are provided
+            else if (args.length == 2) {
                 String target = args[0];
                 String filename = args[1];
                 FileProcessor processor = new FileProcessor(target);
-                processor.processFile(filename); // Search file for target
-            } else {
-                printUsage(); // Invalid args, show usage
+                processor.processFile(filename); // search file for target
             }
-        } catch (IllegalArgumentException e) {
+            // invalid number of arguments
+            else {
+                printUsage(); // show usage instructions
+            }
+        }
+        // catch invalid inputs like null or empty pattern
+        catch (IllegalArgumentException e) {
             System.err.println("error: " + e.getMessage());
-            printUsage(); // Handle invalid input (e.g., null pattern)
+            printUsage(); // show usage on error
         }
     }
 
     /**
-     * Prints usage instructions for running the program.
+     * prints usage instructions for running the program
      */
     private static void printUsage() {
         System.out.println("usage: java KMPsearch \"target\" [filename.txt]");

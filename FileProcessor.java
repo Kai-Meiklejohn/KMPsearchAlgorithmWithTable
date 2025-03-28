@@ -10,21 +10,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * processes file to locate and display pattern matches
+ * Processes a file to locate and display pattern matches.
  */
 public class FileProcessor {
-    private final KMPSearcher searcher;
+    private final KMPSearcher searcher; // Searcher instance for pattern matching
 
     /**
-     * sets up processor with a kmp searcher for the pattern
-     * @param pattern the string to search for
+     * Sets up processor with a KMP searcher for the pattern.
+     * @param pattern String to search for
      */
     public FileProcessor(String pattern) {
-        SkipTable skipTable = new SkipTable(pattern); // Build skip table once
+        SkipTable skipTable = new SkipTable(pattern);
         this.searcher = new KMPSearcher(skipTable.getPattern(), skipTable.getSkipTable());
     }
 
-    // reads file and prints pattern occurrences with line numbers
+    /**
+     * Reads file line-by-line and prints pattern matches with line numbers.
+     * @param filename File to process
+     */
     public void processFile(String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -33,6 +36,7 @@ public class FileProcessor {
                 lineNum++;
                 ArrayList<Integer> matches = searcher.search(line);
                 if (!matches.isEmpty()) {
+                    // Print matches in format: "line X (Y): Z, W, ..."
                     System.out.print("line " + lineNum + " (" + matches.size() + "): ");
                     for (int i = 0; i < matches.size(); i++) {
                         System.out.print(matches.get(i));

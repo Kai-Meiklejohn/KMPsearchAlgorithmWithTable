@@ -1,5 +1,5 @@
 // KMPSearcher.java
-// implements string searching without lps using a skip table
+// Implements string searching without lps using a skip table
 // Name: Kai Meiklejohn
 // Student ID: 1632448
 // Solo project
@@ -7,17 +7,17 @@
 import java.util.ArrayList;
 
 /**
- * performs string searching to find pattern occurrences in text without lps
+ * Performs string searching using a precomputed 2D skip table instead of an LPS array.
  */
 public class KMPSearcher {
-    private final String pattern;
-    private final int[][] skipTable; // 2d array: [char index][position]
+    private final String pattern;    // Pattern to search for
+    private final int[][] skipTable; // 2D skip table for A-Z and a-z
 
     /**
-     * initializes searcher with pattern and prebuilt skip table
-     * @param skipTable the precomputed skip table from SkipTable
-     * @param pattern the string to search for
-     * @throws IllegalArgumentException if pattern or skipTable is null or invalid
+     * Initializes with a pattern and precomputed skip table from SkipTable.
+     * @param pattern String to search for
+     * @param skipTable Precomputed skip table
+     * @throws IllegalArgumentException if pattern or skipTable is invalid
      */
     public KMPSearcher(String pattern, int[][] skipTable) {
         if (pattern == null || pattern.isEmpty()) {
@@ -30,44 +30,50 @@ public class KMPSearcher {
         this.skipTable = skipTable;
     }
 
-    // searches for pattern in text and returns list of match start indices
+    /**
+     * Searches for all pattern occurrences in text using the skip table.
+     * @param text Text to search in
+     * @return List of starting indices of matches
+     */
     public ArrayList<Integer> search(String text) {
         ArrayList<Integer> matches = new ArrayList<>();
         if (text == null || text.isEmpty()) {
-            return matches; // no matches in null/empty text
+            return matches; // No matches possible
         }
 
-        int textPos = 0; // position in text
-        int patPos = 0; // position in pattern
+        int textPos = 0; // Position in text
+        int patPos = 0;  // Position in pattern
 
         while (textPos < text.length()) {
             if (pattern.charAt(patPos) == text.charAt(textPos)) {
                 textPos++;
                 patPos++;
                 if (patPos == pattern.length()) {
-                    matches.add(textPos - patPos); // record match start
-                    patPos = 0; // reset to start after match
+                    matches.add(textPos - patPos); // Record match start
+                    patPos = 0; // Reset for next match
                 }
             } else {
                 char textChar = text.charAt(textPos);
                 int charIndex;
+                // Map text char to skip table index
                 if (textChar >= 'A' && textChar <= 'Z') {
-                    charIndex = textChar - 'A'; // 0-25 for A-Z
+                    charIndex = textChar - 'A'; // A-Z: 0-25
                 } else if (textChar >= 'a' && textChar <= 'z') {
-                    charIndex = 26 + (textChar - 'a'); // 26-51 for a-z
+                    charIndex = 26 + (textChar - 'a'); // a-z: 26-51
                 } else {
-                    textPos++; // char not in A-Z or a-z, shift text
+                    textPos++; // Skip non-alphabetic chars
                     patPos = 0;
                     continue;
                 }
+                
                 int skip = skipTable[charIndex][patPos];
                 if (skip == 0) {
-                    patPos++; // should never happen due to mismatch
+                    patPos++; // Rare case, fallback increment
                 } else if (skip > patPos) {
-                    textPos += skip - patPos; // shift text past current alignment
+                    textPos += skip - patPos; // Shift text forward
                     patPos = 0;
                 } else {
-                    patPos = patPos - skip + 1; // shift pattern back
+                    patPos = patPos - skip + 1; // Shift pattern back
                 }
             }
         }

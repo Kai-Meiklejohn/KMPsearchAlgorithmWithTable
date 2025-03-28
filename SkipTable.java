@@ -10,8 +10,9 @@ import java.util.TreeSet;
  * Handles KMP skip table computation and printing without an LPS array.
  */
 public class SkipTable {
-    private final String pattern;    // Target string for the skip table
-    private final int[][] skipTable; // 2D array: [char index][position] for skips
+    private static final int CHAR_RANGE = 256; // We now allow all ASCII chars
+    private final String pattern;              // Target string for the skip table
+    private final int[][] skipTable;           // 2D array: [char index][position] for skips
 
     /**
      * Initializes with pattern and builds the skip table.
@@ -27,23 +28,21 @@ public class SkipTable {
     }
 
     /**
-     * Builds a 2D skip table for A-Z and a-z at each pattern position.
+     * Builds a 2D skip table for all ASCII characters at each pattern position.
      * @return The computed skip table
      */
     private int[][] buildSkipTable() {
         int len = pattern.length();
-        int[][] table = new int[52][len]; // 52 rows: A-Z (0-25), a-z (26-51)
+        int[][] table = new int[CHAR_RANGE][len];
+        // Collect unique chars for printing
         TreeSet<Character> alphabet = new TreeSet<>();
         for (char c : pattern.toCharArray()) {
-            alphabet.add(c); // Collect unique chars for printing
+            alphabet.add(c);
         }
 
         for (int pos = 0; pos < len; pos++) {
-            for (char c = 'A'; c <= 'Z'; c++) {
-                table[c - 'A'][pos] = computeSkip(c, pos);
-            }
-            for (char c = 'a'; c <= 'z'; c++) {
-                table[26 + (c - 'a')][pos] = computeSkip(c, pos);
+            for (int ch = 0; ch < CHAR_RANGE; ch++) {
+                table[ch][pos] = computeSkip((char) ch, pos);
             }
         }
         return table;
@@ -95,7 +94,7 @@ public class SkipTable {
         // Print rows for unique characters in pattern
         for (char letter : alphabet) {
             System.out.print(letter);
-            int charIndex = (letter >= 'A' && letter <= 'Z') ? (letter - 'A') : (26 + (letter - 'a'));
+            int charIndex = letter; // ASCII value as index
             for (int pos = 0; pos < pattern.length(); pos++) {
                 System.out.print("," + skipTable[charIndex][pos]);
             }

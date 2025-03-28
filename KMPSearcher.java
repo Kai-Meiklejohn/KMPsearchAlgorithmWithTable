@@ -11,7 +11,7 @@ import java.util.ArrayList;
  */
 public class KMPSearcher {
     private final String pattern;    // Pattern to search for
-    private final int[][] skipTable; // 2D skip table for A-Z and a-z
+    private final int[][] skipTable; // 2D skip table for all ASCII chars
 
     /**
      * Initializes with a pattern and precomputed skip table from SkipTable.
@@ -23,8 +23,9 @@ public class KMPSearcher {
         if (pattern == null || pattern.isEmpty()) {
             throw new IllegalArgumentException("pattern cannot be null or empty");
         }
-        if (skipTable == null || skipTable.length != 52 || skipTable[0].length != pattern.length()) {
-            throw new IllegalArgumentException("skipTable must be valid for A-Z and a-z with pattern length");
+        // Ensure we match the same dimensions (256 rows)
+        if (skipTable == null || skipTable.length != 256 || skipTable[0].length != pattern.length()) {
+            throw new IllegalArgumentException("skipTable must be valid for all ASCII chars with pattern length");
         }
         this.pattern = pattern;
         this.skipTable = skipTable;
@@ -53,27 +54,23 @@ public class KMPSearcher {
                     patPos = 0; // Reset for next match
                 }
             } else {
-                char textChar = text.charAt(textPos);
-                int charIndex;
-                // Map text char to skip table index
-                if (textChar >= 'A' && textChar <= 'Z') {
-                    charIndex = textChar - 'A'; // A-Z: 0-25
-                } else if (textChar >= 'a' && textChar <= 'z') {
-                    charIndex = 26 + (textChar - 'a'); // a-z: 26-51
-                } else {
-                    textPos++; // Skip non-alphabetic chars
-                    patPos = 0;
-                    continue;
-                }
-                
-                int skip = skipTable[charIndex][patPos];
-                if (skip == 0) {
-                    patPos++; // Rare case, fallback increment
-                } else if (skip > patPos) {
-                    textPos += skip - patPos; // Shift text forward
+                // Get ASCII index, skip if out of range
+                int charIndex = text.charAt(textPos) < 256 ? text.charAt(textPos) : -1;
+                if (charIndex < 0) {
+                    // Non-ASCII character: just move on
+                    textPos++;
                     patPos = 0;
                 } else {
-                    patPos = patPos - skip + 1; // Shift pattern back
+                    int skip = skipTable[charIndex][patPos];
+                    if (skip == 0) {
+                        // Rare case—can increment the pattern pos
+                        patPos++;
+                    } else if (skip > patPos) {
+                        textPos += skip - patPos;
+                        patPos = 0;
+                    } else {
+                        patPos = patPos - skip + 1;
+                    }
                 }
             }
         }

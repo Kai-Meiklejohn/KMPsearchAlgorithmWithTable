@@ -81,7 +81,6 @@ Handles file reading and output formatting:
 
 ## Tools and Resources Used
 - [KMP Algorithm Tutorial](https://www.geeksforgeeks.org/kmp-algorithm-for-pattern-searching/)
-- [KMP Table](https://stackoverflow.com/questions/13792118/kmp-prefix-table)
 
 ## Pseudocode (High-Level Description)
 Below is a plain-English breakdown of the program’s algorithm, split into four components that work together to implement the KMP string search.

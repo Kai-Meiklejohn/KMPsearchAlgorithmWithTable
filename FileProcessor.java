@@ -1,5 +1,5 @@
 // FileProcessor.java
-// Reads a file and finds pattern occurrences in each line
+// Reads a file and finds pattern occurrences in each line, outputting lines with "marmot" in the specified format
 // Name: Kai Meiklejohn
 // Student ID: 1632448
 // Solo project
@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Processes a file to locate and display pattern matches.
+ * Processes a file to locate and display pattern matches in the specified format.
  */
 public class FileProcessor {
     private final KMPSearcher searcher; // searcher instance for pattern matching
@@ -20,33 +20,28 @@ public class FileProcessor {
      * @param pattern string to search for
      */
     public FileProcessor(String pattern) {
-        // initialize skip table and searcher
+        // initialise skip table and searcher
         SkipTable skipTable = new SkipTable(pattern);
         this.searcher = new KMPSearcher(skipTable.getPattern(), skipTable.getSkipTable());
     }
 
     /**
-     * reads file line-by-line and prints pattern matches with line numbers
+     * reads each line of a file and prints pattern matches with line number, first occurrence index, and the line
      * @param filename file to process
      */
     public void processFile(String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
-            int lineNum = 0;
+            int lineCount = 0; //to keep track of line numbers
+
             // read each line
             while ((line = reader.readLine()) != null) {
-                lineNum++;
+                lineCount++;
                 ArrayList<Integer> matches = searcher.search(line);
-                // output matches if any
+                // if there are any matches, output the line number, first match's index, and the line
                 if (!matches.isEmpty()) {
-                    System.out.print("line " + lineNum + " (" + matches.size() + "): ");
-                    for (int i = 0; i < matches.size(); i++) {
-                        System.out.print(matches.get(i));
-                        if (i < matches.size() - 1) {
-                            System.out.print(", ");
-                        }
-                    }
-                    System.out.println();
+                    int firstMatchIndex = matches.get(0) + 1; // convert to 1 based indexing
+                    System.out.println("line: " + lineCount + " index: " + firstMatchIndex + " sentence: " + line);
                 }
             }
         }

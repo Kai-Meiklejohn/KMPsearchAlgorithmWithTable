@@ -39,33 +39,32 @@ public class KMPSearcher {
      */
     public ArrayList<Integer> search(String text) {
         ArrayList<Integer> matches = new ArrayList<>();
-        if (text == null || text.isEmpty() || pattern == null || pattern.isEmpty()) {
+        if (text == null || text.isEmpty() || pattern.isEmpty()) {
             return matches;
         }
 
         int textPos = 0;
-        int patPos = 0;
-
-        while (textPos < text.length()) {
-            if (patPos < pattern.length() && text.charAt(textPos) == pattern.charAt(patPos)) {
-                textPos++;
+        // only search up to where there are enough characters left for a complete match
+        while (textPos <= text.length() - pattern.length()) {
+            int patPos = 0;
+            // compare characters while they match
+            while (patPos < pattern.length() && text.charAt(textPos + patPos) == pattern.charAt(patPos)) {
                 patPos++;
-                if (patPos == pattern.length()) {
-                    matches.add(textPos - patPos); // match found, record start position
-                    patPos = 0; // reset to search for next match
-                }
-            } else {
-                int charIndex = (int) text.charAt(textPos);
-                if (charIndex >= 256) charIndex = 255; // clamp to highest ASCII
+            }
 
-                int skip = skipTable[charIndex][patPos];
-                if (skip == 0) {
-                    patPos = 0; // reset pattern position
-                    textPos++; // move text forward
-                } else {
-                    textPos += skip; // skip ahead in text
-                    patPos = 0; // reset pattern position
+            // if entire pattern matched
+            if (patPos == pattern.length()) {
+                matches.add(textPos);
+                textPos++;  // move on to find next match
+            } else {
+                // mismatch, compute skip
+                int mismatchChar = text.charAt(textPos + patPos);
+                // if mismatchChar is not in the pattern, skip to next character
+                if (mismatchChar >= 256) {
+                    mismatchChar = 255; // clamp
                 }
+                int skip = skipTable[mismatchChar][patPos];
+                textPos += Math.max(1, skip);
             }
         }
 

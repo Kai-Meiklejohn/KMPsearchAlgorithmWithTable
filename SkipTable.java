@@ -1,5 +1,5 @@
 // SkipTable.java
-// Computes and prints the kmp skip table for a target string without lps
+// Computes and prints the kmp skip table for a target string 
 // Name: Kai Meiklejohn
 // Student ID: 1632448
 // Solo project

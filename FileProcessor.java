@@ -1,5 +1,5 @@
 // FileProcessor.java
-// Reads a file and finds pattern occurrences in each line, outputting lines with "marmot" in the specified format
+// Reads a file and finds pattern occurrences in each line
 // Name: Kai Meiklejohn
 // Student ID: 1632448
 // Solo project

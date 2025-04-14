@@ -1,5 +1,5 @@
 // KMPSearcher.java
-// Implements string searching without lps using a skip table
+// Implements string searching using a skip table
 // Name: Kai Meiklejohn
 // Student ID: 1632448
 // Solo project

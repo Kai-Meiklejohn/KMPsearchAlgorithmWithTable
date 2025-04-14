@@ -39,50 +39,36 @@ public class KMPSearcher {
      */
     public ArrayList<Integer> search(String text) {
         ArrayList<Integer> matches = new ArrayList<>();
-        // return empty list if text is invalid
-        if (text == null || text.isEmpty()) {
+        if (text == null || text.isEmpty() || pattern == null || pattern.isEmpty()) {
             return matches;
         }
 
-        int textPos = 0; // current position in text
-        int patPos = 0;  // current position in pattern
+        int textPos = 0;
+        int patPos = 0;
 
-        // process text until end
         while (textPos < text.length()) {
-            // characters match, move forward
-            if (pattern.charAt(patPos) == text.charAt(textPos)) {
+            if (patPos < pattern.length() && text.charAt(textPos) == pattern.charAt(patPos)) {
                 textPos++;
                 patPos++;
-                // full match found
                 if (patPos == pattern.length()) {
-                    matches.add(textPos - patPos); // add match start index
-                    patPos = 0; // reset for next match
+                    matches.add(textPos - patPos); // match found, record start position
+                    patPos = 0; // reset to search for next match
                 }
-            }
-            // mismatch, use skip table
-            else {
-                int charIndex = text.charAt(textPos) < 256 ? text.charAt(textPos) : -1;
-                // handle non-ASCII chars
-                if (charIndex < 0) {
-                    textPos++;
-                    patPos = 0;
-                }
-                // apply skip logic
-                else {
-                    int skip = skipTable[charIndex][patPos];
-                    if (skip == 0) {
-                        patPos++; // rare case, increment pattern pos
-                    }
-                    else if (skip > patPos) {
-                        textPos += skip - patPos; // shift text forward
-                        patPos = 0;
-                    }
-                    else {
-                        patPos = patPos - skip + 1; // adjust pattern position
-                    }
+            } else {
+                int charIndex = (int) text.charAt(textPos);
+                if (charIndex >= 256) charIndex = 255; // clamp to highest ASCII
+
+                int skip = skipTable[charIndex][patPos];
+                if (skip == 0) {
+                    patPos = 0; // reset pattern position
+                    textPos++; // move text forward
+                } else {
+                    textPos += skip; // skip ahead in text
+                    patPos = 0; // reset pattern position
                 }
             }
         }
+
         return matches;
     }
 }

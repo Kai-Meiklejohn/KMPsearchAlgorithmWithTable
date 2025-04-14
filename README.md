@@ -38,7 +38,7 @@ Examples:
 
 #### KMPsearch
 The main controller program that:
-1. Parses command-line arguments: either a single target string or a target string followed by a filename.
+1. Parses command-line arguments: either a single target string or a target string plus a filename.
 2. If one argument is provided (target string):
    - Instantiates `SkipTable` to compute and print the skip table for the target.
 3. If two arguments are provided (target and filename):
@@ -46,36 +46,35 @@ The main controller program that:
 4. Handles errors (e.g., incorrect number of arguments or invalid input) by printing an error message and usage instructions: `"usage: java KMPsearch \"target\" [filename.txt]"`.
 
 #### SkipTable
-Generates and displays the KMP skip table without using an LPS array:
-1. Takes a target string and constructs a 2D skip table (`int[256][pattern.length]`) for all ASCII characters (0-255) at each position in the pattern.
+Generates and displays the KMP skip table without using a standard LPS array:
+1. Takes a target string and constructs a 2D skip table (`int[256][pattern.length()]`) for all ASCII characters (0-255) at each position in the pattern.
 2. Computes skip distances dynamically:
-   - For each position and character, determines the number of positions to skip by checking for prefix-suffix alignments up to that point.
-   - If the character matches at the current position, skip is 0; otherwise, it calculates the shift based on the longest matching prefix or defaults to skipping past the current position.
+   - For each position and character, determines how far to skip by checking for a prefix-suffix alignment if there’s a mismatch.
+   - If the character matches at the current position, set skip to zero; otherwise, calculate the shift based on the longest matching prefix or default to skipping the full segment (`pos + 1`).
 3. Prints the skip table in CSV format:
-   - First row: `"*"` followed by the pattern characters.
-   - Rows for each unique character in the pattern (sorted alphabetically): character followed by skip values for each position.
-   - Default row: `"*"` followed by full-shift values (`position + 1`) for characters not in the pattern.
+   - First row: `*` followed by the pattern’s characters.
+   - Rows for each unique character in the pattern (sorted alphabetically): character plus skip values for each position.
+   - Final row: `*` followed by full-shift values (`position + 1`) for characters not in the pattern.
 
 #### KMPSearcher
-Implements the core KMP string searching algorithm using a precomputed 2D skip table:
-1. Takes a pattern and its skip table as input, validating that the table matches the pattern length and covers all ASCII characters (256 rows).
+Implements the core skip-based KMP string searching algorithm using the precomputed 2D skip table:
+1. Takes a pattern and 2D skip table (covering all ASCII characters).
 2. Searches for all occurrences of the pattern in a given text:
-   - Advances pointers in text and pattern on character matches.
-   - On a full match, records the starting index and resets the pattern pointer.
-   - On a mismatch, uses the skip table to determine how to adjust the pointers:
-     - Skips forward in the text if the skip value exceeds the current pattern position.
-     - Backtracks in the pattern if the skip value is less than the current position.
-     - Handles non-ASCII characters by skipping them and resetting the pattern pointer.
-3. Returns an `ArrayList` of all match starting indices (0-based).
+   - Compares characters while they match, advancing both text and pattern pointers.
+   - If a full match occurs, records the starting index and advances in the text.
+   - On a mismatch, looks up the skip distance for the mismatched character:
+     - Ensures positions near the end of words (e.g., “afternoon”) get checked properly so no occurrence is missed.
+   - Continues until no more matches can be found in the text.
+3. Returns an `ArrayList<Integer>` of zero-based match starting indices.
 
 #### FileProcessor
-Handles file reading and output formatting:
-1. Initializes with a pattern, creating a `SkipTable` and `KMPSearcher` instance for searching.
-2. Reads the specified file line-by-line using `BufferedReader`.
+Handles file reading and output:
+1. Initialises a `SkipTable` and `KMPSearcher`.
+2. Reads the file line-by-line.
 3. For each line:
-   - Uses `KMPSearcher` to find all occurrences of the pattern.
-   - If matches are found, prints: `"line X (Y): Z, W, ..."` where `X` is the line number, `Y` is the match count, and `Z, W, ...` are the 0-based indices of matches.
-4. Gracefully handles I/O errors by printing an error message with the filename and exception details.
+   - Uses `KMPSearcher` to find occurrences of the pattern.
+   - Prints the line number and first match position (one-based index), along with the line text if found.
+4. Gracefully handles input/output errors by printing an error message with the filename and exception details.
 
 ---
 
@@ -83,55 +82,44 @@ Handles file reading and output formatting:
 - [KMP Algorithm Tutorial](https://www.geeksforgeeks.org/kmp-algorithm-for-pattern-searching/)
 
 ## Pseudocode (High-Level Description)
-Below is a plain-English breakdown of the program’s algorithm, split into four components that work together to implement the KMP string search.
+Below is a plain-English description of the updated program’s algorithm, broken into four components.
 
 #### KMPsearch (Main Wrapper)
 **Purpose:** Coordinate execution based on user input.
 
 **Algorithm:**
-- Check command-line arguments (1 or 2 args allowed).
+- Parse command-line arguments (1 or 2).
 - If one arg:
-  - Pass target string to `SkipTable` to build and print the skip table.
+  - Create a `SkipTable` for the target and print it.
 - If two args:
-  - Pass target and filename to `FileProcessor` to search the file.
+  - Create a `FileProcessor` with the target and search the file.
 - If invalid args:
-  - Print usage message: "usage: java KMPsearch \"target\" [filename.txt]" and exit.
+  - Print usage message and exit.
 
 #### KMPSearcher (KMP Algorithm)
-**Purpose:** Perform efficient string searching using KMP.
+**Purpose:** Perform efficient string searching using a skip-based approach.
 
 **Algorithm:**
-- Build 2D skip table for target string:
-  - For each position and lowercase letter (a-z):
-    - If match: Set skip to 0.
-    - Else: Compute shift by finding longest prefix that aligns with a suffix.
-- Search text for target:
-  - Compare characters between text and pattern.
-  - On match: Advance both pointers; record full matches.
-  - On mismatch: Use skip table to shift text or pattern pointers.
-- Return array of all found indices.
+- Use the skip table to handle mismatches.
+- Compare characters in text and pattern:
+  - On match: Continue comparing next characters.  
+  - On mismatch: Jump ahead based on the skip table.  
+- Record all match indices.
 
 #### SkipTable (Skip Table Generation)
-**Purpose:** Create and display the KMP skip table.
+**Purpose:** Create a 2D skip table for quick mismatch handling.
 
 **Algorithm:**
-- Build 2D skip table for target string:
-  - For each position and lowercase letter:
-    - Compute skip distance by checking prefix-suffix matches.
-- Print table:
-  - Pattern row: List target characters prefixed with "*".
-  - For each unique char in target (sorted alphabetically):
-    - Print row with char and skip values for each position.
-  - Default row: Print full-shift values (position + 1) prefixed with "*".
-- Format all rows as comma-separated values.
+- For each position in the pattern and each ASCII character:
+  - If character matches pattern at position, skip is 0.
+  - Else, find the largest prefix that matches a suffix before this position.
+- Print results in CSV format.
 
 #### FileProcessor (File Search)
-**Purpose:** Process file and output matching lines.
+**Purpose:** Read a file and show lines that match the target pattern.
 
 **Algorithm:**
-- Open input file.
-- For each line:
-  - Use `KMPSearcher` to find all target occurrences.
-  - If target found:
-    - Print line number, match count, and all occurrence indices (0-based).
-- Close file and handle any I/O errors with error messages.
+- Open the file.
+- For each line, run the KMP search.
+- Print line number and index of the first occurrence if matches are found.
+- Close the file, handling any I/O errors.

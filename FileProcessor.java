@@ -32,22 +32,19 @@ public class FileProcessor {
     public void processFile(String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
-            int lineCount = 0; //to keep track of line numbers
+            int lineNumber = 0;
 
-            // read each line
             while ((line = reader.readLine()) != null) {
-                lineCount++;
+                lineNumber++;
                 ArrayList<Integer> matches = searcher.search(line);
-                // if there are any matches, output the line number, first match's index, and the line
                 if (!matches.isEmpty()) {
-                    int firstMatchIndex = matches.get(0) + 1; // convert to 1 based indexing
-                    System.out.println("line: " + lineCount + " index: " + firstMatchIndex + " sentence: " + line);
+                    int firstMatch = matches.get(0) + 1; //1 based indexing
+                    System.out.println("line: " + lineNumber + " index: " + firstMatch + " sentence: " + line);
                 }
             }
-        }
-        // handle file reading errors
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.println("error reading file '" + filename + "': " + e.getMessage());
+            System.exit(1);
         }
     }
 }

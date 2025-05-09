@@ -1,7 +1,6 @@
 # KMPsearch Assignment
 Name: Kai Meiklejohn  
-Student ID: 1632448  
-Solo project implementing the Knuth-Morris-Pratt (KMP) string search algorithm.
+Implementing the Knuth-Morris-Pratt (KMP) string search algorithm.
 
 ## Overview
 This project implements the Knuth-Morris-Pratt (KMP) string search algorithm in Java for plain-text files. The program searches for a target substring within a text file or displays a skip table for the target string, using a 2D skip table approach. It processes files line-by-line and outputs matching lines with their occurrence indices.
@@ -17,7 +16,7 @@ The program consists of four components:
 
 The program supports two modes:
 - Printing the skip table when given only a target string.
-- Searching a file and printing each line containing the target (first occurrence only, as per solo spec).
+- Searching a file and printing each line containing the target.
 
 ## Usage Instructions
 Compile all components: `javac *.java*`

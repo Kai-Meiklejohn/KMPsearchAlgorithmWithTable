@@ -1,7 +1,6 @@
 // KMPSearcher.java
 // Implements string searching using a skip table
 // Name: Kai Meiklejohn
-// Student ID: 1632448
 // Solo project
 
 import java.util.ArrayList;

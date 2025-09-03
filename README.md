@@ -1,5 +1,4 @@
-# KMPsearch Assignment
-Name: Kai Meiklejohn  
+# KMPsearch Assignment  
 Implementing the Knuth-Morris-Pratt (KMP) string search algorithm.
 
 ## Overview
